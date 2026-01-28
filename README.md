@@ -155,6 +155,65 @@ Key CLI invocation:
 claude --dangerously-skip-permissions -p --verbose --output-format stream-json "<prompt>"
 ```
 
+## Guardrails
+
+Built-in protections to prevent runaway token usage:
+
+- **Daily Limit**: Max 3 repos per day (configurable)
+- **Max Retries**: 2 attempts per repo before giving up
+- **Circuit Breaker**: Stops after 3 consecutive failures
+- **Cooldown**: 1 hour minimum between runs
+- **Timeout**: 45 minutes max per repo
+- **Quality Review**: Validates content before marking success
+- **Sitemap Check**: Skips repos already documented on DocSmith
+
+## Migrating to a Dedicated Server
+
+For 24/7 reliability, you can run this on a Linux server instead of your laptop.
+
+### Quick Setup (Ubuntu/Debian)
+
+```bash
+git clone https://github.com/robroyhobbs/docsmith-daily.git
+cd docsmith-daily
+./scripts/setup-linux.sh
+```
+
+The script will:
+1. Install Node.js 20 via nvm
+2. Install Claude CLI
+3. Set up cron job (9 AM daily)
+4. Configure log rotation
+
+### Manual Linux Setup
+
+```bash
+# Install Node.js
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+nvm install 20
+
+# Install Claude CLI and authenticate
+npm install -g @anthropic-ai/claude-code
+claude  # Follow prompts to authenticate
+
+# Clone and install
+git clone https://github.com/robroyhobbs/docsmith-daily.git
+cd docsmith-daily
+npm install
+
+# Add cron job (9 AM daily)
+crontab -e
+# Add: 0 9 * * * cd ~/docsmith-daily && node src/index.mjs >> logs/cron.log 2>&1
+```
+
+### Recommended Server Options
+
+| Option | Cost | Notes |
+|--------|------|-------|
+| DigitalOcean Droplet | $6/mo | Simple, reliable |
+| Raspberry Pi 5 | $80 one-time | Low power, runs at home |
+| AWS/GCP Free Tier | Free (1 yr) | More complex setup |
+
 ## License
 
 MIT
