@@ -22,6 +22,7 @@ import { fetchTrendingRepos, selectRepos } from './components/trending-fetcher.m
 import { exclusionManager } from './components/exclusion-manager.mjs';
 import { cloneRepo } from './components/repo-cloner.mjs';
 import { runWorkflow } from './components/docsmith-runner.mjs';
+import { filterAlreadyDocumented } from './components/sitemap-checker.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = join(__dirname, '..');
@@ -197,11 +198,26 @@ async function main() {
     // Fetch trending repos
     const trending = await fetchTrendingRepos({ limit: 50 });
 
-    // Filter excluded repos
-    const candidates = exclusionManager.filter(trending);
+    // Filter excluded repos (local exclusion list)
+    const afterExclusion = exclusionManager.filter(trending);
+
+    if (afterExclusion.length === 0) {
+      logger.warn('No candidate repositories found after filtering exclusions');
+      return;
+    }
+
+    // Filter repos already documented on DocSmith (sitemap check)
+    logger.info('Checking DocSmith sitemap for already-documented repos...');
+    const { newRepos: candidates, existingRepos } = await filterAlreadyDocumented(afterExclusion);
+
+    if (existingRepos.length > 0) {
+      logger.info(`Skipped ${existingRepos.length} repos already on DocSmith`, {
+        skipped: existingRepos.map(r => r.name)
+      });
+    }
 
     if (candidates.length === 0) {
-      logger.warn('No candidate repositories found after filtering');
+      logger.warn('No candidate repositories found after sitemap check');
       return;
     }
 

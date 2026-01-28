@@ -18,57 +18,117 @@ function generateAutomationPrompt(repoName, repoUrl) {
   return `You are running in FULLY AUTOMATED mode. Do NOT ask for user confirmation at any step.
 Proceed with all default options and make reasonable decisions autonomously.
 
-TASK: Generate comprehensive "Getting Started" documentation for the repository.
+TASK: Generate comprehensive, high-quality "Getting Started" documentation for the repository.
 
 Repository: ${repoName}
 URL: ${repoUrl}
 
 CRITICAL REQUIREMENTS:
-1. Documentation must be DETAILED and COMPREHENSIVE - at least 500 words per major document
-2. Include practical code examples that users can copy and run
-3. Explain the WHY, not just the HOW
-4. Generate documentation in Chinese (zh) as the source language
-5. Translate to English (en) and Japanese (ja)
-6. Publish to DocSmith Cloud (https://docsmith.aigne.io)
+1. Documentation must be HIGHLY DETAILED and COMPREHENSIVE - this is the primary documentation for developers
+2. Each major document should be substantive with real depth (see word minimums below)
+3. Include MANY practical code examples that users can copy and run immediately
+4. Explain the WHY behind design decisions, not just the HOW
+5. Generate documentation in Chinese (zh) as the source language
+6. Translate to English (en) and Japanese (ja)
+7. Publish to DocSmith Cloud (https://docsmith.aigne.io)
 
 WORKFLOW - Execute ALL steps WITHOUT stopping for confirmation:
 
-## PHASE 1: Initialize Workspace
-Create .aigne/doc-smith/ directory with:
-- config.yaml with project metadata
-- Analyze repository thoroughly: README, source code, examples, tests
+## PHASE 1: Initialize Workspace & Analyze Repository
+Create .aigne/doc-smith/ directory with config.yaml.
+
+THOROUGHLY analyze the repository:
+- Read README.md completely
+- Examine package.json/Cargo.toml/go.mod/requirements.txt for dependencies
+- Browse source code structure and key files
+- Look at examples/ directory if present
+- Check tests for usage patterns
+- Read any existing documentation
+
+IMPORTANT - Find and use project images:
+- Look for logo files: logo.png, logo.svg, icon.png, favicon.ico in root, assets/, images/, public/
+- Check README for embedded images or badges
+- Look for screenshots in docs/, images/, screenshots/, .github/
+- These images should be referenced in the documentation using AFS image slots
 
 ## PHASE 2: Create User Intent (DO NOT ASK FOR CONFIRMATION)
 Write intent/user-intent.md specifying:
-- Target audience: Developers wanting to use this project
-- Documentation purpose: Comprehensive Getting Started guide
-- Scope: Full coverage of installation, configuration, usage, and troubleshooting
-- Tone: Professional, clear, practical with many examples
+- Target audience: Developers wanting to use this project effectively
+- Documentation purpose: Complete Getting Started guide that serves as primary resource
+- Scope: Comprehensive coverage - installation, configuration, ALL major features, advanced usage, troubleshooting
+- Tone: Professional, clear, practical with abundant examples
+- Quality bar: This should be good enough to be the official documentation
 
 ## PHASE 3: Plan Document Structure (DO NOT ASK FOR CONFIRMATION)
-Create planning/document-structure.yaml with AT LEAST these documents:
-- /overview - Project introduction, features, architecture (500+ words)
-- /getting-started - Complete installation and first steps (800+ words)
-- /configuration - All configuration options explained (600+ words)
-- /usage - Practical examples and use cases (1000+ words)
-- /troubleshooting - Common issues and solutions (400+ words)
+Create planning/document-structure.yaml with these documents (MINIMUM):
+
+- /overview (1000+ words minimum)
+  - What the project does and why it exists
+  - Key features and capabilities (detailed, not just a list)
+  - Architecture overview with explanation
+  - Comparison with alternatives (if applicable)
+  - Use cases and when to use this project
+  - Include project logo if found
+
+- /getting-started (1500+ words minimum)
+  - Prerequisites with version requirements
+  - Multiple installation methods (npm/yarn/pnpm, binary, docker, source)
+  - First complete working example with full code
+  - Step-by-step walkthrough of the example
+  - Verification that installation worked
+  - Common first-time setup issues
+
+- /configuration (1200+ words minimum)
+  - ALL configuration options documented
+  - Configuration file formats and locations
+  - Environment variables
+  - Default values and what they mean
+  - Examples for common configurations
+  - Configuration for different environments (dev/staging/prod)
+
+- /usage (2000+ words minimum)
+  - Core API/CLI usage with examples
+  - At least 5-10 complete code examples
+  - Common patterns and idioms
+  - Integration with other tools/frameworks
+  - Best practices
+  - Performance considerations
+
+- /advanced (800+ words minimum)
+  - Advanced features and customization
+  - Extending or plugin development (if applicable)
+  - Optimization techniques
+  - Security considerations
+
+- /troubleshooting (600+ words minimum)
+  - Common errors and solutions
+  - Debugging techniques
+  - FAQ section
+  - Where to get help
 
 ## PHASE 4: Generate Document Content
-For EACH document, write COMPREHENSIVE content including:
-- Clear explanations with context
-- Multiple code examples with comments
-- Step-by-step instructions
-- Tips and best practices
-- Cross-references to related topics
-- AFS image slots for helpful diagrams
+For EACH document, write COMPREHENSIVE content:
+- Write with depth and detail - imagine you're teaching a developer who needs to become productive
+- Include 3-5 code examples per document minimum
+- Code examples must be complete and runnable, not snippets
+- Add comments in code explaining what each part does
+- Include expected output where relevant
+- Add tips, warnings, and best practices callouts
+- Cross-reference related sections
+- Use AFS image slots for:
+  - Project logo (if found in repo)
+  - Architecture diagrams
+  - Screenshots (if found in repo)
+  - Flowcharts for complex processes
 
 ## PHASE 5: Validate
 Run /doc-smith-check --structure
 Run /doc-smith-check --content
-Fix any issues automatically
+Fix any issues automatically - especially word count minimums
 
 ## PHASE 6: Translate
 Translate all documents to English (en) and Japanese (ja)
+Ensure technical terms are translated appropriately
 Update config.yaml with translateLanguages: [en, ja]
 
 ## PHASE 7: Publish
@@ -86,6 +146,7 @@ RULES:
 - If a step fails, log error and continue
 - Complete entire workflow autonomously
 - Report the final published URL
+- PRIORITIZE QUALITY AND DEPTH over speed
 
 BEGIN EXECUTION NOW.`;
 }
