@@ -215,17 +215,40 @@ async function main() {
 
     logger.info(`Selected ${selected.length} repos for processing`);
 
+    // Get retry settings
+    const maxRetries = settings.retry?.maxAttempts || 3;
+    const maxConsecutiveFailures = 3;  // Circuit breaker
+
     // Process each selected repo
     let successCount = 0;
     let failureCount = 0;
+    let consecutiveFailures = 0;
 
     for (const repo of selected) {
+      // Circuit breaker: stop if too many consecutive failures
+      if (consecutiveFailures >= maxConsecutiveFailures) {
+        logger.error(`Circuit breaker triggered: ${consecutiveFailures} consecutive failures. Stopping.`);
+        break;
+      }
+
+      // Check if repo has exceeded max retries
+      const retryInfo = state.pendingRetries.find(r => r.repoName === repo.name);
+      if (retryInfo && retryInfo.retryCount >= maxRetries) {
+        logger.warn(`Skipping ${repo.name}: exceeded max retries (${retryInfo.retryCount}/${maxRetries})`);
+        // Remove from pending retries (give up)
+        state.pendingRetries = state.pendingRetries.filter(r => r.repoName !== repo.name);
+        saveState(state);
+        continue;
+      }
+
       const success = await processRepository(repo, state);
 
       if (success) {
         successCount++;
+        consecutiveFailures = 0;  // Reset circuit breaker
       } else {
         failureCount++;
+        consecutiveFailures++;
       }
 
       // Small delay between repos
@@ -233,6 +256,14 @@ async function main() {
         logger.debug('Waiting before next repo...');
         await new Promise(resolve => setTimeout(resolve, 5000));
       }
+    }
+
+    // Clean up stale retries (exceeded max attempts)
+    const staleRetries = state.pendingRetries.filter(r => r.retryCount >= maxRetries);
+    if (staleRetries.length > 0) {
+      logger.info(`Removing ${staleRetries.length} repos that exceeded max retries`);
+      state.pendingRetries = state.pendingRetries.filter(r => r.retryCount < maxRetries);
+      saveState(state);
     }
 
     // Final state save
