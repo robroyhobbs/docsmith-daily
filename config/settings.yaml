@@ -28,10 +28,17 @@ docsmith:
 
 # Retry configuration
 retry:
-  maxAttempts: 3
+  maxAttempts: 2           # Keep low to limit token burn (2 attempts = 1 retry)
   initialDelayMs: 5000
   maxDelayMs: 60000
   backoffMultiplier: 2
+
+# Quality review configuration
+qualityReview:
+  enabled: true            # Run quality check before publishing
+  minWordCount: 500        # Minimum words per document
+  requireCodeExamples: true
+  checkBrokenLinks: false  # TODO: implement link checking
 
 # Workspace configuration
 workspace:

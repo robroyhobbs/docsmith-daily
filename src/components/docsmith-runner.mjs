@@ -421,6 +421,52 @@ export async function runWorkflow(repoPath, repoName, options = {}) {
       completedAt: new Date().toISOString()
     });
 
+    // Quality review before final success determination
+    if (result.success) {
+      try {
+        const { reviewQuality } = await import('./quality-reviewer.mjs');
+        const docsPath = join(repoPath, '.aigne', 'doc-smith', 'docs');
+
+        if (onStepStart) {
+          onStepStart('quality-review', 'Reviewing documentation quality');
+        }
+
+        const review = await reviewQuality(docsPath, repoName, {
+          minWordCount: 300,
+          requireCodeExamples: true,
+          enabled: true  // Enable AI sample review
+        });
+
+        results.steps.push({
+          name: 'quality-review',
+          success: review.passed,
+          details: review.summary,
+          score: review.aiReview?.score,
+          completedAt: new Date().toISOString()
+        });
+
+        if (!review.passed) {
+          logger.warn('Quality review failed', { summary: review.summary });
+          results.success = false;
+          results.qualityIssues = review.lightweight?.issues || [];
+          if (onStepError) {
+            onStepError('quality-review', new Error(review.summary));
+          }
+        } else {
+          logger.info('Quality review passed', {
+            score: review.aiReview?.score,
+            docs: review.lightweight?.stats?.totalDocs
+          });
+          if (onStepComplete) {
+            onStepComplete('quality-review', true);
+          }
+        }
+      } catch (reviewError) {
+        // Don't fail the whole workflow if review errors out
+        logger.warn('Quality review error (continuing)', { error: reviewError.message });
+      }
+    }
+
     logger.info(`Workflow completed`, {
       success: results.success,
       publishedUrl: results.publishedUrl,
