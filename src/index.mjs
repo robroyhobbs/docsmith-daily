@@ -132,6 +132,35 @@ async function processRepository(repo, state) {
 }
 
 /**
+ * Check if we should run based on time since last run and daily limit
+ */
+function shouldRun(state, settings) {
+  const now = new Date();
+  const today = now.toISOString().split('T')[0];
+
+  // If it's a new day, reset and allow running
+  if (state.todayDate !== today) {
+    return { run: true, reason: 'New day started' };
+  }
+
+  // If daily limit reached, skip
+  if (state.todayProcessed >= settings.processing.dailyLimit) {
+    return { run: false, reason: `Daily limit reached (${state.todayProcessed}/${settings.processing.dailyLimit})` };
+  }
+
+  // If last run was less than 1 hour ago, skip (prevent rapid re-runs)
+  if (state.lastRun) {
+    const lastRunTime = new Date(state.lastRun);
+    const hoursSinceLastRun = (now - lastRunTime) / (1000 * 60 * 60);
+    if (hoursSinceLastRun < 1) {
+      return { run: false, reason: `Last run was ${Math.round(hoursSinceLastRun * 60)} minutes ago, waiting for cooldown` };
+    }
+  }
+
+  return { run: true, reason: 'Ready to process remaining quota' };
+}
+
+/**
  * Main automation entry point
  */
 async function main() {
@@ -154,14 +183,13 @@ async function main() {
       totalProcessed: state.statistics.totalProcessed
     });
 
-    // Check if daily limit reached
-    if (state.todayProcessed >= settings.processing.dailyLimit) {
-      logger.info('Daily processing limit reached', {
-        processed: state.todayProcessed,
-        limit: settings.processing.dailyLimit
-      });
+    // Check if we should run
+    const { run, reason } = shouldRun(state, settings);
+    if (!run) {
+      logger.info(`Skipping run: ${reason}`);
       return;
     }
+    logger.info(`Proceeding: ${reason}`);
 
     // Load exclusions
     await exclusionManager.load();

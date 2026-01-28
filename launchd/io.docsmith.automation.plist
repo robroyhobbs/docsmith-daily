@@ -39,9 +39,9 @@
     <key>StandardErrorPath</key>
     <string>/Users/robroyhobbs/docsmith-automation/logs/launchd-stderr.log</string>
 
-    <!-- Don't run at load, only at scheduled time -->
+    <!-- Run at load to catch up on missed schedules -->
     <key>RunAtLoad</key>
-    <false/>
+    <true/>
 
     <!-- Don't keep alive, just run once per schedule -->
     <key>KeepAlive</key>
