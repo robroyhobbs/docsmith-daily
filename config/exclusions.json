@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "lastUpdated": "2026-01-28T19:37:34.747Z",
+  "lastUpdated": "2026-01-28T20:02:57.641Z",
   "showcaseProjects": [
     {
       "name": "DocSmith",
@@ -79,6 +79,7 @@
     }
   ],
   "processedRepos": [
-    "clawdbot/clawdbot"
+    "clawdbot/clawdbot",
+    "affaan-m/everything-claude-code"
   ]
 }
