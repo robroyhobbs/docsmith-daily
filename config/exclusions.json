@@ -1,0 +1,84 @@
+{
+  "version": "1.0",
+  "lastUpdated": "2026-01-28T19:37:34.747Z",
+  "showcaseProjects": [
+    {
+      "name": "DocSmith",
+      "pattern": "doc-?smith",
+      "type": "regex"
+    },
+    {
+      "name": "WebSmith",
+      "pattern": "web-?smith",
+      "type": "regex"
+    },
+    {
+      "name": "ImageSmith",
+      "pattern": "image-?smith",
+      "type": "regex"
+    },
+    {
+      "name": "CodeSmith",
+      "pattern": "code-?smith",
+      "type": "regex"
+    },
+    {
+      "name": "AIGNE Framework",
+      "pattern": "aigne.*framework",
+      "type": "regex"
+    },
+    {
+      "name": "AIGNE Hub",
+      "pattern": "aigne.*hub",
+      "type": "regex"
+    },
+    {
+      "name": "AIGNE Studio",
+      "pattern": "aigne.*studio",
+      "type": "regex"
+    },
+    {
+      "name": "AIGNE CLI",
+      "pattern": "aigne.*cli",
+      "type": "regex"
+    },
+    {
+      "name": "AIGNE Observability",
+      "pattern": "aigne.*observability",
+      "type": "regex"
+    },
+    {
+      "name": "Discuss Kit",
+      "pattern": "discuss.*kit",
+      "type": "regex"
+    },
+    {
+      "name": "Media Kit",
+      "pattern": "media.*kit",
+      "type": "regex"
+    },
+    {
+      "name": "Image Bin",
+      "pattern": "image.*bin",
+      "type": "regex"
+    },
+    {
+      "name": "Pages Kit",
+      "pattern": "pages.*kit",
+      "type": "regex"
+    },
+    {
+      "name": "Payment Kit",
+      "pattern": "payment.*kit",
+      "type": "regex"
+    },
+    {
+      "name": "Search Kit",
+      "pattern": "search.*kit",
+      "type": "regex"
+    }
+  ],
+  "processedRepos": [
+    "clawdbot/clawdbot"
+  ]
+}

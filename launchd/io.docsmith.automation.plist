@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>io.docsmith.automation</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/robroyhobbs/.nvm/versions/node/v24.12.0/bin/node</string>
+        <string>/Users/robroyhobbs/docsmith-automation/src/index.mjs</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/robroyhobbs/docsmith-automation</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/Users/robroyhobbs/.nvm/versions/node/v24.12.0/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+        <key>HOME</key>
+        <string>/Users/robroyhobbs</string>
+        <key>NODE_ENV</key>
+        <string>production</string>
+    </dict>
+
+    <!-- Run daily at 9:00 AM -->
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>9</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>/Users/robroyhobbs/docsmith-automation/logs/launchd-stdout.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/Users/robroyhobbs/docsmith-automation/logs/launchd-stderr.log</string>
+
+    <!-- Don't run at load, only at scheduled time -->
+    <key>RunAtLoad</key>
+    <false/>
+
+    <!-- Don't keep alive, just run once per schedule -->
+    <key>KeepAlive</key>
+    <false/>
+
+    <!-- Background process type -->
+    <key>ProcessType</key>
+    <string>Background</string>
+
+    <!-- Minimum time between runs (1 hour) to prevent rapid re-runs on failure -->
+    <key>ThrottleInterval</key>
+    <integer>3600</integer>
+
+    <!-- Nice value (lower priority) -->
+    <key>Nice</key>
+    <integer>10</integer>
+</dict>
+</plist>

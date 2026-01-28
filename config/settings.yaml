@@ -1,0 +1,56 @@
+# DocSmith Automation Settings
+version: "1.0"
+
+# Daily processing configuration
+processing:
+  dailyLimit: 3           # Max repos to process per day
+  minStars: 100           # Minimum stars for repo selection
+  preferredLanguages:     # Prioritize repos with these languages
+    - TypeScript
+    - JavaScript
+    - Python
+    - Go
+    - Rust
+
+# Localization settings
+localization:
+  sourceLocale: en
+  targetLocales:
+    - en
+    - ja
+    - zh
+
+# Doc-smith skill configuration
+docsmith:
+  generateGettingStarted: true
+  generateDiagrams: true
+  documentType: "getting-started"
+
+# Retry configuration
+retry:
+  maxAttempts: 3
+  initialDelayMs: 5000
+  maxDelayMs: 60000
+  backoffMultiplier: 2
+
+# Workspace configuration
+workspace:
+  baseDir: workspace
+  deleteAfterPublish: true   # Clean up cloned repo after successful publish
+
+# Logging configuration
+logging:
+  level: info
+  retainDays: 30
+  maxFileSizeMB: 10
+
+# Scheduler configuration
+scheduler:
+  enabled: true
+  runHour: 9              # Run at 9:00 AM
+  runMinute: 0
+  timezone: local
+
+# API endpoints
+apis:
+  ossInsight: "https://api.ossinsight.io/v1/trends/repos"
