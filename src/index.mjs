@@ -221,19 +221,41 @@ async function main() {
       return;
     }
 
+    // Get retry settings
+    const maxRetries = settings.retry?.maxAttempts || 2;
+    const maxConsecutiveFailures = 3;  // Circuit breaker
+
+    // Filter out repos that have exceeded max retries BEFORE selection
+    const afterRetryFilter = candidates.filter(repo => {
+      const retryInfo = state.pendingRetries.find(r => r.repoName === repo.name);
+      if (retryInfo && retryInfo.retryCount >= maxRetries) {
+        logger.info(`Filtering out ${repo.name}: exceeded max retries (${retryInfo.retryCount}/${maxRetries})`);
+        // Mark as excluded so it won't be picked again
+        exclusionManager.markExcluded(repo.name, `Failed ${retryInfo.retryCount} times: ${retryInfo.lastError}`);
+        // Remove from pending retries
+        state.pendingRetries = state.pendingRetries.filter(r => r.repoName !== repo.name);
+        return false;
+      }
+      return true;
+    });
+
+    if (afterRetryFilter.length === 0) {
+      logger.warn('No candidate repositories found after retry filter');
+      saveState(state);
+      return;
+    }
+
+    logger.info(`${afterRetryFilter.length} repos available after retry filter`);
+
     // Select repos to process (up to remaining daily limit)
     const remaining = settings.processing.dailyLimit - state.todayProcessed;
-    const selected = selectRepos(candidates, {
+    const selected = selectRepos(afterRetryFilter, {
       count: remaining,
       minStars: settings.processing.minStars,
       preferredLanguages: settings.processing.preferredLanguages
     });
 
     logger.info(`Selected ${selected.length} repos for processing`);
-
-    // Get retry settings
-    const maxRetries = settings.retry?.maxAttempts || 3;
-    const maxConsecutiveFailures = 3;  // Circuit breaker
 
     // Process each selected repo
     let successCount = 0;
@@ -245,16 +267,6 @@ async function main() {
       if (consecutiveFailures >= maxConsecutiveFailures) {
         logger.error(`Circuit breaker triggered: ${consecutiveFailures} consecutive failures. Stopping.`);
         break;
-      }
-
-      // Check if repo has exceeded max retries
-      const retryInfo = state.pendingRetries.find(r => r.repoName === repo.name);
-      if (retryInfo && retryInfo.retryCount >= maxRetries) {
-        logger.warn(`Skipping ${repo.name}: exceeded max retries (${retryInfo.retryCount}/${maxRetries})`);
-        // Remove from pending retries (give up)
-        state.pendingRetries = state.pendingRetries.filter(r => r.repoName !== repo.name);
-        saveState(state);
-        continue;
       }
 
       const success = await processRepository(repo, state);
@@ -274,10 +286,13 @@ async function main() {
       }
     }
 
-    // Clean up stale retries (exceeded max attempts)
+    // Clean up stale retries (exceeded max attempts) and add to exclusions
     const staleRetries = state.pendingRetries.filter(r => r.retryCount >= maxRetries);
     if (staleRetries.length > 0) {
       logger.info(`Removing ${staleRetries.length} repos that exceeded max retries`);
+      for (const retry of staleRetries) {
+        await exclusionManager.markExcluded(retry.repoName, `Failed ${retry.retryCount} times: ${retry.lastError}`);
+      }
       state.pendingRetries = state.pendingRetries.filter(r => r.retryCount < maxRetries);
       saveState(state);
     }

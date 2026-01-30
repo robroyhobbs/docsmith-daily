@@ -71,10 +71,10 @@ export function updateCurrentTask(state, task) {
 export function markTaskComplete(state, repoName, success, processingTimeMs) {
   state.currentTask = null;
   state.statistics.totalProcessed++;
+  state.todayProcessed++;  // Count ALL attempts toward daily limit
 
   if (success) {
     state.statistics.successCount++;
-    state.todayProcessed++;
   } else {
     state.statistics.failureCount++;
   }

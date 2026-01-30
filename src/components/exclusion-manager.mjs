@@ -93,6 +93,12 @@ export class ExclusionManager {
       return true;
     }
 
+    // Check excluded repos (failed too many times)
+    if (this.isInExcludedList(repoName)) {
+      logger.debug(`Repo ${repoName} in excluded list, excluding`);
+      return true;
+    }
+
     return false;
   }
 
@@ -123,6 +129,35 @@ export class ExclusionManager {
       await this.save();
       logger.info(`Marked repo as processed: ${repoName}`);
     }
+  }
+
+  /**
+   * Mark a repo as excluded due to repeated failures
+   */
+  async markExcluded(repoName, reason) {
+    if (!this.exclusions.excludedRepos) {
+      this.exclusions.excludedRepos = [];
+    }
+
+    // Check if already excluded
+    const existing = this.exclusions.excludedRepos.find(r => r.name === repoName);
+    if (!existing) {
+      this.exclusions.excludedRepos.push({
+        name: repoName,
+        reason: reason || 'Exceeded max retry attempts',
+        addedAt: new Date().toISOString().split('T')[0]
+      });
+      await this.save();
+      logger.info(`Marked repo as excluded: ${repoName} (${reason})`);
+    }
+  }
+
+  /**
+   * Check if a repo is in the excluded list (failed repos)
+   */
+  isInExcludedList(repoName) {
+    if (!this.exclusions?.excludedRepos) return false;
+    return this.exclusions.excludedRepos.some(r => r.name === repoName);
   }
 
   /**

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "lastUpdated": "2026-01-28T20:02:57.641Z",
+  "lastUpdated": "2026-01-29T20:19:26.990Z",
   "showcaseProjects": [
     {
       "name": "DocSmith",
@@ -80,6 +80,36 @@
   ],
   "processedRepos": [
     "clawdbot/clawdbot",
-    "affaan-m/everything-claude-code"
+    "affaan-m/everything-claude-code",
+    "lucasgelfond/zerobrew",
+    "asgeirtj/system_prompts_leaks",
+    "anthropics/skills"
+  ],
+  "excludedRepos": [
+    {
+      "name": "asgeirtj/system_prompts_leaks",
+      "reason": "Too large - times out during doc generation",
+      "addedAt": "2026-01-29"
+    },
+    {
+      "name": "anthropics/skills",
+      "reason": "Large repo with many files - times out",
+      "addedAt": "2026-01-29"
+    },
+    {
+      "name": "obra/superpowers",
+      "reason": "Failed 2 times: Workflow failed",
+      "addedAt": "2026-01-30"
+    },
+    {
+      "name": "adenhq/hive",
+      "reason": "Failed 2 times: Workflow failed",
+      "addedAt": "2026-01-30"
+    },
+    {
+      "name": "archestra-ai/archestra",
+      "reason": "Failed 2 times: Workflow failed",
+      "addedAt": "2026-01-30"
+    }
   ]
 }
