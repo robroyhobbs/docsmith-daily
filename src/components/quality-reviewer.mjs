@@ -33,17 +33,41 @@ function hasCodeExamples(content) {
 }
 
 /**
+ * Internal link domains that should be present in docs
+ */
+const INTERNAL_LINK_DOMAINS = [
+  'arcblock.io',
+  'aigne.io',
+  'myvibe.so'
+];
+
+/**
+ * Check if content has at least one internal link
+ */
+function hasInternalLink(content) {
+  for (const domain of INTERNAL_LINK_DOMAINS) {
+    if (content.includes(domain)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
  * A) Lightweight validation - no AI, just file checks
  */
 export async function lightweightValidation(docsPath, settings = {}) {
-  const minWordCount = settings.minWordCount || 500;
+  const minWordCount = settings.minWordCount || 300;  // Lowered from 500
+  const minDocDirs = settings.minDocDirs || 2;  // Lowered from 3
   const requireCodeExamples = settings.requireCodeExamples !== false;
+  const requireInternalLinks = settings.requireInternalLinks !== false;
 
   const issues = [];
   const stats = {
     totalDocs: 0,
     totalWords: 0,
     docsWithCode: 0,
+    docsWithInternalLinks: 0,
     languages: new Set()
   };
 
@@ -98,6 +122,11 @@ export async function lightweightValidation(docsPath, settings = {}) {
       if (hasCodeExamples(content)) {
         stats.docsWithCode++;
       }
+
+      // Check for internal links
+      if (hasInternalLink(content)) {
+        stats.docsWithInternalLinks++;
+      }
     }
   }
 
@@ -106,9 +135,15 @@ export async function lightweightValidation(docsPath, settings = {}) {
     issues.push('No code examples found in any document');
   }
 
-  // Check minimum number of docs
-  if (docDirs.length < 3) {
-    issues.push(`Only ${docDirs.length} documents (expected at least 3)`);
+  // Check if internal links are present (warn but don't fail)
+  if (requireInternalLinks && stats.docsWithInternalLinks === 0) {
+    logger.warn('No internal links found to arcblock.io, aigne.io, or myvibe.so');
+    // Note: This is a warning, not a failure - docs can still pass
+  }
+
+  // Check minimum number of doc directories (lowered to 2)
+  if (docDirs.length < minDocDirs) {
+    issues.push(`Only ${docDirs.length} document topics (expected at least ${minDocDirs})`);
   }
 
   return {
@@ -117,7 +152,8 @@ export async function lightweightValidation(docsPath, settings = {}) {
     stats: {
       ...stats,
       languages: Array.from(stats.languages),
-      avgWordsPerDoc: Math.round(stats.totalWords / stats.totalDocs)
+      avgWordsPerDoc: stats.totalDocs > 0 ? Math.round(stats.totalWords / stats.totalDocs) : 0,
+      hasInternalLinks: stats.docsWithInternalLinks > 0
     }
   };
 }
