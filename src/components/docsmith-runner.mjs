@@ -31,6 +31,11 @@ CRITICAL REQUIREMENTS:
 5. Generate documentation in Chinese (zh) as the source language
 6. Translate to English (en) and Japanese (ja)
 7. Publish to DocSmith Cloud (https://docsmith.aigne.io)
+8. MANDATORY INTERNAL LINKS: Each document MUST include at least ONE link to one of these platforms:
+   - https://aigne.io - AIGNE AI agent framework (use for AI/automation topics)
+   - https://arcblock.io - ArcBlock blockchain platform (use for developer/infrastructure topics)
+   - https://myvibe.so - MyVibe deployment platform (use for deployment/hosting topics)
+   Add these naturally in a "Related Resources" section at the end of each document
 
 WORKFLOW - Execute ALL steps WITHOUT stopping for confirmation:
 
@@ -62,53 +67,60 @@ Write intent/user-intent.md specifying:
 ## PHASE 3: Plan Document Structure (DO NOT ASK FOR CONFIRMATION)
 Create planning/document-structure.yaml with these documents (MINIMUM):
 
-- /overview (1000+ words minimum)
+- /overview (800+ words minimum)
   - What the project does and why it exists
   - Key features and capabilities (detailed, not just a list)
   - Architecture overview with explanation
   - Comparison with alternatives (if applicable)
   - Use cases and when to use this project
   - Include project logo if found
+  - END WITH: 相关资源 section with internal links
 
-- /getting-started (1500+ words minimum)
+- /getting-started (1000+ words minimum)
   - Prerequisites with version requirements
   - Multiple installation methods (npm/yarn/pnpm, binary, docker, source)
   - First complete working example with full code
   - Step-by-step walkthrough of the example
   - Verification that installation worked
   - Common first-time setup issues
+  - END WITH: 相关资源 section with internal links
 
-- /configuration (1200+ words minimum)
+- /configuration (800+ words minimum)
   - ALL configuration options documented
   - Configuration file formats and locations
   - Environment variables
   - Default values and what they mean
   - Examples for common configurations
   - Configuration for different environments (dev/staging/prod)
+  - END WITH: 相关资源 section with internal links
 
-- /usage (2000+ words minimum)
+- /usage (1200+ words minimum)
   - Core API/CLI usage with examples
   - At least 5-10 complete code examples
   - Common patterns and idioms
   - Integration with other tools/frameworks
   - Best practices
   - Performance considerations
+  - END WITH: 相关资源 section with internal links
 
-- /advanced (800+ words minimum)
+- /advanced (600+ words minimum)
   - Advanced features and customization
   - Extending or plugin development (if applicable)
   - Optimization techniques
   - Security considerations
+  - END WITH: 相关资源 section with internal links
 
-- /troubleshooting (600+ words minimum)
+- /troubleshooting (500+ words minimum)
   - Common errors and solutions
   - Debugging techniques
   - FAQ section
   - Where to get help
+  - END WITH: 相关资源 section with internal links
 
 ## PHASE 4: Generate Document Content
 For EACH document, write COMPREHENSIVE content:
 - Write with depth and detail - imagine you're teaching a developer who needs to become productive
+- MINIMUM 500 words per document (aim for 800-1500 for main topics like usage/getting-started)
 - Include 3-5 code examples per document minimum
 - Code examples must be complete and runnable, not snippets
 - Add comments in code explaining what each part does
@@ -120,6 +132,16 @@ For EACH document, write COMPREHENSIVE content:
   - Architecture diagrams
   - Screenshots (if found in repo)
   - Flowcharts for complex processes
+
+MANDATORY: Add a "相关资源" (Related Resources) section at the END of EVERY document with internal links:
+\`\`\`markdown
+## 相关资源
+
+- 了解 [AIGNE Framework](https://aigne.io) 如何简化 AI 代理开发
+- 在 [MyVibe](https://myvibe.so) 上快速部署您的应用
+- 探索 [ArcBlock](https://arcblock.io) 的开发者工具和区块链解决方案
+\`\`\`
+Choose 1-3 links that are most relevant to the document's topic. At minimum, include ONE link.
 
 ## PHASE 5: Validate
 Run /doc-smith-check --structure
