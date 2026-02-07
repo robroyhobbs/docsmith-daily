@@ -1,9 +1,19 @@
 import { mkdirSync, writeFileSync, existsSync, rmSync } from "fs";
 import { join } from "path";
-import { fetchTrendingRepos, fetchReadme, fetchFileTree, type RepoInfo } from "./github-api";
+import {
+  fetchTrendingRepos,
+  fetchReadme,
+  fetchFileTree,
+  type RepoInfo,
+} from "./github-api";
 import { checkSitemap } from "./sitemap-checker";
 import { loadConfig, type Config } from "./config";
-import { readHistory, writeHistory, readCandidates, writeCandidates } from "./data";
+import {
+  readHistory,
+  writeHistory,
+  readCandidates,
+  writeCandidates,
+} from "./data";
 
 export interface DiscoveryCandidate {
   name: string;
@@ -65,12 +75,10 @@ export function applyFilters(
   candidates: DiscoveryCandidate[],
   config: Config,
   history: any[],
-  sitemapResults: Map<string, boolean>
+  sitemapResults: Map<string, boolean>,
 ): DiscoveryCandidate[] {
   const successRepos = new Set(
-    history
-      .filter((h) => h.status === "success")
-      .map((h) => h.repo)
+    history.filter((h) => h.status === "success").map((h) => h.repo),
   );
 
   const exclusionSet = new Set(config.exclusions.map((e) => e.toLowerCase()));
@@ -116,7 +124,7 @@ export function applyFilters(
 export function createTask(
   candidate: DiscoveryCandidate,
   intentDir: string,
-  readmeContent: string
+  readmeContent: string,
 ): boolean {
   const date = new Date().toISOString().split("T")[0];
   const safeName = sanitizeDirName(candidate.name);
@@ -132,7 +140,9 @@ export function createTask(
 
   // Truncate readme for INTENT.md
   const readmeExcerpt =
-    safeReadme.length > 2000 ? safeReadme.substring(0, 2000) + "\n\n..." : safeReadme;
+    safeReadme.length > 2000
+      ? safeReadme.substring(0, 2000) + "\n\n..."
+      : safeReadme;
 
   try {
     mkdirSync(taskDir, { recursive: true });
@@ -203,63 +213,63 @@ Generate documentation in English (primary), Chinese, and Japanese.
 
 Generate and publish documentation for ${candidate.name} to docsmith.aigne.io.
 
-## Phase 0: Clone & Analyze
+**Session boundaries:** Split across 4 sessions to avoid context overflow.
 
-### Description
+## Session 1: Generate & Validate (Phases 0-3)
+
+### Phase 0: Clone & Analyze
+
 Shallow clone the repository, analyze structure, README, and key source files.
 Determine appropriate doc count (3 for simple, 5-6 for complex).
 
-### Acceptance Criteria
 - [ ] Repository cloned successfully
 - [ ] Structure analysis complete
 - [ ] Doc count determined
 
-## Phase 1: Generate Docs
+### Phase 1: Generate Docs
 
-### Description
 Initialize .aigne/doc-smith/ workspace and run doc-smith-create.
 
-### Acceptance Criteria
 - [ ] doc-smith-create completed
 - [ ] All documents meet minimum word counts
 
-## Phase 2: Images & Diagrams
+### Phase 2: Images & Diagrams
 
-### Description
 Insert mermaid diagrams and generate AI hero images.
 
-### Acceptance Criteria
 - [ ] Mermaid diagrams in architecture docs
 - [ ] AI hero images generated
 
-## Phase 3: Validate
+### Phase 3: Validate
 
-### Description
 Run doc-smith-check to validate structure and content.
 
-### Acceptance Criteria
 - [ ] doc-smith-check passes
 - [ ] All .meta.yaml files correct
 - [ ] All internal links resolve
 
-## Phase 4: Localize
+## Session 2: Publish English (Phase 4)
 
-### Description
-Translate to Chinese and Japanese using doc-smith-localize.
+Publish English docs first (before translations).
 
-### Acceptance Criteria
-- [ ] Chinese translations complete
-- [ ] Japanese translations complete
-
-## Phase 5: Publish
-
-### Description
-Publish to docsmith.aigne.io and verify.
-
-### Acceptance Criteria
 - [ ] Published successfully
 - [ ] URL accessible
 - [ ] Recorded in history
+
+## Session 3: Localize (Phase 5)
+
+Translate to Chinese and Japanese using doc-smith-localize (use subagents per language).
+
+- [ ] Chinese translations complete
+- [ ] Japanese translations complete
+
+## Session 4: Republish (Phase 6)
+
+Republish with all translations included.
+
+- [ ] Republished successfully
+- [ ] All languages accessible
+- [ ] TASK.yaml marked done
 `;
 
     writeFileSync(join(taskDir, "plan.md"), planContent);
@@ -268,7 +278,7 @@ Publish to docsmith.aigne.io and verify.
     const taskContent = `status: ready
 owner: null
 assignee: null
-phase: 0/6
+phase: 0/7
 updated: ${new Date().toISOString()}
 heartbeat: null
 `;
@@ -323,14 +333,22 @@ export async function runDiscovery(projectRoot: string): Promise<{
 
   for (const repo of repos) {
     const readme = await fetchReadme(repo.owner, repo.name);
-    const fileTree = await fetchFileTree(repo.owner, repo.name, repo.default_branch);
+    const fileTree = await fetchFileTree(
+      repo.owner,
+      repo.name,
+      repo.default_branch,
+    );
     const hasDocsFolder = fileTree.some(
-      (f) => f.startsWith("docs/") || f.startsWith("doc/") || f.startsWith("documentation/")
+      (f) =>
+        f.startsWith("docs/") ||
+        f.startsWith("doc/") ||
+        f.startsWith("documentation/"),
     );
 
     // Simple English detection: check if README is primarily ASCII
     const asciiChars = readme.replace(/[^\x00-\x7F]/g, "").length;
-    const isEnglishPrimary = readme.length > 0 ? asciiChars / readme.length > 0.8 : false;
+    const isEnglishPrimary =
+      readme.length > 0 ? asciiChars / readme.length > 0.8 : false;
 
     enriched.push({
       name: repo.name,
@@ -373,7 +391,7 @@ export async function runDiscovery(projectRoot: string): Promise<{
       language: c.language,
       readme_length: c.readme_length,
       file_count: c.file_count,
-    }))
+    })),
   );
 
   if (filtered.length === 0) {
@@ -413,7 +431,12 @@ export async function runDiscovery(projectRoot: string): Promise<{
 export { fetchTrendingRepos, fetchReadme, fetchFileTree } from "./github-api";
 export { checkSitemap } from "./sitemap-checker";
 export { loadConfig } from "./config";
-export { readHistory, writeHistory, readCandidates, writeCandidates } from "./data";
+export {
+  readHistory,
+  writeHistory,
+  readCandidates,
+  writeCandidates,
+} from "./data";
 
 // CLI entry point
 if (import.meta.main) {

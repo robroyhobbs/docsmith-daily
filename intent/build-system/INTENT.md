@@ -40,13 +40,12 @@
 │                    Local Mac (TeamSwarm)                          │
 │                                                                   │
 │  ┌──────────────┐    ┌──────────────────────────────────────┐   │
-│  │  teamswarm   │───▶│         Doc-Smith Pipeline            │   │
-│  │    work      │    │                                       │   │
-│  │  (detects    │    │  1. doc-smith-create (adaptive 3-6)   │   │
-│  │   new task)  │    │  2. doc-smith-images (mermaid + AI)   │   │
-│  └──────────────┘    │  3. doc-smith-check (validate)        │   │
-│                      │  4. doc-smith-localize (en→zh,ja)     │   │
-│                      │  5. doc-smith-publish (aigne.io)      │   │
+│  │  /swarm run  │───▶│    Doc-Smith Pipeline (4 sessions)    │   │
+│  │  or          │    │                                       │   │
+│  │  run-daily.sh│    │  S1: create → images → check          │   │
+│  │  (discovers  │    │  S2: publish English                   │   │
+│  │   + executes)│    │  S3: localize (en→zh,ja)              │   │
+│  └──────────────┘    │  S4: republish with translations      │   │
 │                      └──────────────────────────────────────┘   │
 │                                                                   │
 │  On failure: retry next repo (max 3) → log failure → skip day   │
@@ -76,9 +75,10 @@ docsmith-daily/
 │   └── candidates.json             # Discovery cache
 ├── logs/
 │   └── failures/                   # Structured failure logs
+├── run-daily.sh                     # Standalone pipeline (discovery + 4 sessions)
 ├── package.json
 ├── tsconfig.json
-└── CLAUDE.md                        # Project instructions for agents
+└── CLAUDE.md                        # Project instructions for agents (session splitting)
 ```
 
 ### Data Flow
@@ -140,50 +140,80 @@ GitHub Actions workflow:
 6. Generate `intent/{date}-{repo-name}/TASK.yaml` with `status: ready`
 7. Commit and push
 
-### Execution (TeamSwarm Worker)
+### Execution (Swarm Agent)
 
-When TeamSwarm detects a `status: ready` task:
+> [!SYNCED] Last synced: 2026-02-07 — context overflow fix, phase reorder, session splitting
 
-**Phase 1: Clone & Analyze** (timeout: 5 min)
+When the swarm agent picks up a task, it first checks for an active task. If none exists, it runs discovery locally: `bun run src/discover.ts`. This allows `/swarm run` to handle the full lifecycle without a separate discovery step.
+
+**CRITICAL: Session Splitting** — The pipeline MUST be split across 4 separate agent sessions to avoid context window overflow (validated Feb 2026 with 317K-char README repos). Each session executes one group, updates TASK.yaml, then stops. The swarm picks it up again with fresh context.
+
+**Session 1: Generate & Validate (Phases 0-3)**
+
+**Phase 0: Clone & Analyze** (timeout: 5 min)
 
 - Shallow clone repo (depth 1)
 - Analyze structure, README, key source files
 - Determine doc count: 3 (simple repo) or 5-6 (complex repo)
   - Simple: < 200 files, single language, clear README
   - Complex: > 200 files, multiple languages, or framework/library
+- Update TASK.yaml: `phase: 1/7`
 
-**Phase 2: Generate Docs** (timeout: 30 min)
+**Phase 1: Generate Docs** (timeout: 30 min)
 
 - Initialize .aigne/doc-smith/ workspace
 - Run doc-smith-create with adaptive doc count
 - Each doc: minimum 800 words for overview, 1000+ for guides
+- Update TASK.yaml: `phase: 2/7`
 
-**Phase 3: Images & Diagrams** (timeout: 15 min)
+**Phase 2: Images & Diagrams** (timeout: 15 min)
 
 - Insert mermaid code blocks for: architecture, data flow, component diagrams
 - Generate 1-2 AI hero images via doc-smith-images (overview page, getting started)
 - Aspect ratio: 16:9 for hero images, 4:3 for diagrams
+- Update TASK.yaml: `phase: 3/7`
 
-**Phase 4: Validate** (timeout: 5 min)
+**Phase 3: Validate** (timeout: 5 min)
 
 - Run doc-smith-check --structure --content --check-slots
 - All .meta.yaml files must have `kind: doc`, `source: en`
 - All internal links must resolve
 - Minimum word counts met
+- Update TASK.yaml: `phase: 4/7`
 
-**Phase 5: Localize** (timeout: 20 min)
+**→ STOP. Exit session. Swarm resumes with fresh context.**
 
-- Run doc-smith-localize -l zh -l ja
-- Translate all documents
-- Translate image text if applicable
+**Session 2: Publish English (Phase 4)**
 
-**Phase 6: Publish** (timeout: 10 min)
+**Phase 4: Publish English** (timeout: 10 min)
 
 - Run doc-smith-publish to docsmith.aigne.io
 - Verify published URL is accessible
 - Record URL in history.json
+- Update TASK.yaml: `phase: 5/7`
 
-**Total timeout per repo: 90 minutes**
+**→ STOP. Exit session.**
+
+**Session 3: Localize (Phase 5)**
+
+**Phase 5: Localize** (timeout: 20 min)
+
+- Run doc-smith-localize -l zh (Chinese)
+- Run doc-smith-localize -l ja (Japanese)
+- Verify translations complete (line counts match English)
+- Update TASK.yaml: `phase: 6/7`
+
+**→ STOP. Exit session.**
+
+**Session 4: Republish (Phase 6)**
+
+**Phase 6: Republish with Translations** (timeout: 10 min)
+
+- Run doc-smith-publish again to include translations
+- Verify all languages accessible on published URL
+- Update TASK.yaml: `status: done, phase: 7/7`
+
+**Total timeout per repo: 100 minutes (across 4 sessions)**
 
 ### Failure Handling
 
@@ -306,14 +336,23 @@ exclusions:
 
 ### Plan Template (for generated plan.md)
 
-Each daily task gets a plan.md with 6 phases:
+> [!SYNCED] Last synced: 2026-02-07 — 7-phase model with session boundaries
 
-- Phase 0: Clone & Analyze
-- Phase 1: Generate Docs
-- Phase 2: Images & Diagrams
-- Phase 3: Validate
-- Phase 4: Localize
-- Phase 5: Publish
+Each daily task gets a plan.md with 7 phases across 4 sessions:
+
+- Session 1: Phase 0 (Clone & Analyze), Phase 1 (Generate Docs), Phase 2 (Images & Diagrams), Phase 3 (Validate)
+- Session 2: Phase 4 (Publish English)
+- Session 3: Phase 5 (Localize zh/ja)
+- Session 4: Phase 6 (Republish with translations)
+
+### Standalone Pipeline Script
+
+`run-daily.sh` provides an alternative to `/swarm run` for standalone execution:
+
+- Runs discovery if no active task exists
+- Chains 4 separate `claude -p` invocations (one per session)
+- Resumes from current phase if interrupted
+- Usage: `./run-daily.sh` or `./run-daily.sh <repo-name>`
 
 :::
 
@@ -377,15 +416,16 @@ Each daily task gets a plan.md with 6 phases:
 
 ## 8. Risks
 
-| Risk                                | Impact              | Mitigation                                                    |
-| ----------------------------------- | ------------------- | ------------------------------------------------------------- |
-| GitHub API rate limiting            | Discovery fails     | Use authenticated token (5000/hr). Cache candidates.          |
-| Claude Agent SDK instability        | Execution fails     | Retry with backup repos. Log for debugging.                   |
-| Doc quality regression              | Poor published docs | doc-smith-check validation gate before publish                |
-| Mac offline at execution time       | Task queues up      | TeamSwarm picks up when online. GH Action only creates tasks. |
-| Repo too complex for doc generation | Timeout/failure     | Adaptive doc count. 750-file limit. 90-min timeout.           |
-| DocSmith publish API changes        | Publish fails       | doc-smith-publish skill handles this. Fail + log.             |
-| Discovery finds no good candidates  | No task created     | Lower minimum_score threshold. Expand search criteria.        |
+| Risk                                | Impact                 | Mitigation                                                                                                                                   |
+| ----------------------------------- | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| GitHub API rate limiting            | Discovery fails        | Use authenticated token (5000/hr). Cache candidates.                                                                                         |
+| Claude Agent SDK instability        | Execution fails        | Retry with backup repos. Log for debugging.                                                                                                  |
+| Doc quality regression              | Poor published docs    | doc-smith-check validation gate before publish                                                                                               |
+| Mac offline at execution time       | Task queues up         | TeamSwarm picks up when online. GH Action only creates tasks.                                                                                |
+| Repo too complex for doc generation | Timeout/failure        | Adaptive doc count. 750-file limit. 90-min timeout.                                                                                          |
+| DocSmith publish API changes        | Publish fails          | doc-smith-publish skill handles this. Fail + log.                                                                                            |
+| Discovery finds no good candidates  | No task created        | Lower minimum_score threshold. Expand search criteria.                                                                                       |
+| Context window overflow             | Agent stalls mid-phase | Split pipeline into 4 sessions. Agent executes one group, stops. Swarm resumes with fresh context. Validated Feb 2026 with 317K-char README. |
 
 :::
 
@@ -396,7 +436,58 @@ Each daily task gets a plan.md with 6 phases:
 ## 9. Open Items
 
 - [ ] GitHub token setup for Actions (GITHUB_TOKEN secret)
-- [ ] TeamSwarm workspace registration for ~/work/docsmith-daily
-- [ ] Verify Claude Agent SDK authentication on local machine
+- [x] TeamSwarm workspace registration for ~/work/docsmith-daily
+- [x] Verify Claude Agent SDK authentication on local machine
 - [ ] Initial scoring calibration (may need tuning after first week)
       :::
+
+---
+
+## Finalized Implementation Details
+
+> Synced on: 2026-02-07
+> Context: Post context-overflow fix for awesome-selfhosted (317K README)
+
+### Key Decisions Confirmed During Implementation
+
+| Decision          | Original           | Final                                | Rationale                                                          |
+| ----------------- | ------------------ | ------------------------------------ | ------------------------------------------------------------------ |
+| Phase count       | 6 (0-5)            | 7 (0-6)                              | Publish-first pattern requires separate publish + republish phases |
+| Phase order       | Localize → Publish | Publish → Localize → Republish       | DocSmith validator deletes translation files it considers invalid  |
+| Session model     | Single session     | 4 sessions                           | Context overflow with large repos (317K+ chars)                    |
+| Discovery trigger | GH Actions only    | Agent runs locally if no task exists | Enables `/swarm run` to handle full lifecycle                      |
+| Execution entry   | TeamSwarm only     | `/swarm run` OR `run-daily.sh`       | Shell script chains 4 `claude -p` calls for unattended runs        |
+
+### Module Structure (Finalized)
+
+```
+src/
+├── discover.ts          # Discovery + filtering + task creation (entry point)
+├── github-api.ts        # GitHub REST API client
+├── sitemap-checker.ts   # Dedup against published docs
+├── config.ts            # Config loader (config.yaml)
+├── data.ts              # History/candidates JSON I/O
+├── logging.ts           # Failure logging + history recording
+└── retry.ts             # Next-candidate retry logic
+```
+
+### TASK.yaml Schema (Finalized)
+
+```yaml
+status: ready | in_progress | blocked | done
+owner: null | <machine-name>
+assignee: null | <agent-name>
+phase: 0/7 | 1/7 | ... | 7/7
+updated: <ISO timestamp>
+heartbeat: null | <ISO timestamp>
+note: <optional recovery/error context>
+```
+
+### Session Boundary Contract
+
+Each swarm invocation MUST:
+
+1. Read TASK.yaml to determine current phase
+2. Execute ONLY the session group matching that phase
+3. Update TASK.yaml with new phase
+4. STOP — do not continue to next session group
