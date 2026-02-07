@@ -1,0 +1,16 @@
+{
+  "name": "docsmith-daily",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "bun build src/discover.ts --outdir dist --target bun",
+    "test": "bun test",
+    "discover": "bun run src/discover.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "dependencies": {
+    "yaml": "^2.7.0"
+  }
+}

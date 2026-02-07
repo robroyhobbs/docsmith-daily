@@ -1,0 +1,6 @@
+min_stars: 500
+max_files: 750
+languages: [en, zh, ja]
+docsmith_url: https://docsmith.aigne.io
+exclusions:
+  - example/repo-to-skip
