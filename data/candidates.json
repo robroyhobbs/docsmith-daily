@@ -1,1 +1,218 @@
-[]
+[
+  {
+    "name": "awesome-selfhosted",
+    "full_name": "awesome-selfhosted/awesome-selfhosted",
+    "stars": 271986,
+    "language": null,
+    "readme_length": 317429,
+    "file_count": 6
+  },
+  {
+    "name": "computer-science",
+    "full_name": "ossu/computer-science",
+    "stars": 201058,
+    "language": "HTML",
+    "readme_length": 29288,
+    "file_count": 37
+  },
+  {
+    "name": "You-Dont-Know-JS",
+    "full_name": "getify/You-Dont-Know-JS",
+    "stars": 184365,
+    "language": null,
+    "readme_length": 4213,
+    "file_count": 82
+  },
+  {
+    "name": "Python-100-Days",
+    "full_name": "jackfrued/Python-100-Days",
+    "stars": 178538,
+    "language": "Jupyter Notebook",
+    "readme_length": 31141,
+    "file_count": 713
+  },
+  {
+    "name": "gitignore",
+    "full_name": "github/gitignore",
+    "stars": 172292,
+    "language": null,
+    "readme_length": 7031,
+    "file_count": 306
+  },
+  {
+    "name": "Microsoft-Activation-Scripts",
+    "full_name": "massgravel/Microsoft-Activation-Scripts",
+    "stars": 165140,
+    "language": "Batchfile",
+    "readme_length": 3559,
+    "file_count": 15
+  },
+  {
+    "name": "awesome-go",
+    "full_name": "avelino/awesome-go",
+    "stars": 164450,
+    "language": "Go",
+    "readme_length": 365573,
+    "file_count": 90
+  },
+  {
+    "name": "JavaGuide",
+    "full_name": "Snailclimb/JavaGuide",
+    "stars": 153752,
+    "language": "Java",
+    "readme_length": 22198,
+    "file_count": 514
+  },
+  {
+    "name": "FreeDomain",
+    "full_name": "DigitalPlatDev/FreeDomain",
+    "stars": 146173,
+    "language": "HTML",
+    "readme_length": 2455,
+    "file_count": 39
+  },
+  {
+    "name": "HelloGitHub",
+    "full_name": "521xueweihan/HelloGitHub",
+    "stars": 142377,
+    "language": "Python",
+    "readme_length": 0,
+    "file_count": 0
+  },
+  {
+    "name": "next.js",
+    "full_name": "vercel/next.js",
+    "stars": 137550,
+    "language": "JavaScript",
+    "readme_length": 0,
+    "file_count": 0
+  },
+  {
+    "name": "tech-interview-handbook",
+    "full_name": "yangshun/tech-interview-handbook",
+    "stars": 137460,
+    "language": "TypeScript",
+    "readme_length": 0,
+    "file_count": 0
+  },
+  {
+    "name": "scrcpy",
+    "full_name": "Genymobile/scrcpy",
+    "stars": 135286,
+    "language": "C",
+    "readme_length": 0,
+    "file_count": 0
+  },
+  {
+    "name": "fucking-algorithm",
+    "full_name": "labuladong/fucking-algorithm",
+    "stars": 132485,
+    "language": "Markdown",
+    "readme_length": 0,
+    "file_count": 0
+  },
+  {
+    "name": "go",
+    "full_name": "golang/go",
+    "stars": 132319,
+    "language": "Go",
+    "readme_length": 0,
+    "file_count": 0
+  },
+  {
+    "name": "PowerToys",
+    "full_name": "microsoft/PowerToys",
+    "stars": 129085,
+    "language": "C#",
+    "readme_length": 0,
+    "file_count": 0
+  },
+  {
+    "name": "30-seconds-of-code",
+    "full_name": "Chalarangelo/30-seconds-of-code",
+    "stars": 126695,
+    "language": "JavaScript",
+    "readme_length": 0,
+    "file_count": 0
+  },
+  {
+    "name": "langchain",
+    "full_name": "langchain-ai/langchain",
+    "stars": 126121,
+    "language": "Python",
+    "readme_length": 0,
+    "file_count": 0
+  },
+  {
+    "name": "react-native",
+    "full_name": "facebook/react-native",
+    "stars": 125307,
+    "language": "C++",
+    "readme_length": 0,
+    "file_count": 0
+  },
+  {
+    "name": "open-webui",
+    "full_name": "open-webui/open-webui",
+    "stars": 123169,
+    "language": "Python",
+    "readme_length": 0,
+    "file_count": 0
+  },
+  {
+    "name": "hello-algo",
+    "full_name": "krahets/hello-algo",
+    "stars": 122158,
+    "language": "Java",
+    "readme_length": 0,
+    "file_count": 0
+  },
+  {
+    "name": "kubernetes",
+    "full_name": "kubernetes/kubernetes",
+    "stars": 120319,
+    "language": "Go",
+    "readme_length": 0,
+    "file_count": 0
+  },
+  {
+    "name": "electron",
+    "full_name": "electron/electron",
+    "stars": 120020,
+    "language": "C++",
+    "readme_length": 0,
+    "file_count": 0
+  },
+  {
+    "name": "free-for-dev",
+    "full_name": "ripienaar/free-for-dev",
+    "stars": 117787,
+    "language": "HTML",
+    "readme_length": 0,
+    "file_count": 0
+  },
+  {
+    "name": "excalidraw",
+    "full_name": "excalidraw/excalidraw",
+    "stars": 116176,
+    "language": "TypeScript",
+    "readme_length": 0,
+    "file_count": 0
+  },
+  {
+    "name": "node",
+    "full_name": "nodejs/node",
+    "stars": 115584,
+    "language": "JavaScript",
+    "readme_length": 0,
+    "file_count": 0
+  },
+  {
+    "name": "iptv",
+    "full_name": "iptv-org/iptv",
+    "stars": 111134,
+    "language": "TypeScript",
+    "readme_length": 0,
+    "file_count": 0
+  }
+]
